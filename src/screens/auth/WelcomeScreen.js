@@ -1,4 +1,4 @@
-
+// src/screens/auth/WelcomeScreen.js
 import React from "react";
 import {
   SafeAreaView,
@@ -12,14 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 
 export default function WelcomeScreen({ navigation }) {
   const handleContinue = () => {
-    // go straight to Sign In (users can jump to Sign Up from there)
     navigation.navigate("SignIn");
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
-      {/* Logo */}
       <View style={styles.logoWrap}>
         <View style={styles.logoCircle}>
           <Ionicons name="calendar-outline" size={44} color="#667eea" />
@@ -28,13 +26,11 @@ export default function WelcomeScreen({ navigation }) {
         <Text style={styles.tagline}>Plan less. Do more.</Text>
       </View>
 
-      {/* Continue button (single CTA) */}
       <View style={styles.ctaWrap}>
         <TouchableOpacity style={styles.continueBtn} onPress={handleContinue}>
           <Text style={styles.continueText}>Continue</Text>
         </TouchableOpacity>
 
-        {/* Optional tiny note below (not a button) */}
         <Text style={styles.helperText}>
           Sign in to your account or create a new one
         </Text>
@@ -60,7 +56,7 @@ const styles = StyleSheet.create({
     borderRadius: 48,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(102, 126, 234, 0.1)", // matches your Sign In vibe
+    backgroundColor: "rgba(102, 126, 234, 0.1)",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
     shadowColor: "#667eea",
@@ -89,7 +85,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#667eea", // primary from your Sign In button
+    backgroundColor: "#667eea",
     shadowColor: "#667eea",
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.35,

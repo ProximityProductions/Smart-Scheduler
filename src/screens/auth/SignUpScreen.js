@@ -12,6 +12,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { signUpWithEmail } from '../../services/firebase/authService';
 
 const SignUpScreen = ({ navigation }) => {
   const [fullName, setFullName] = useState('');
@@ -23,19 +24,40 @@ const SignUpScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleSignUp = async () => {
-    if (!fullName || !email || !password || !confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+    // Validation checks
+    if (!fullName.trim()) {
+      Alert.alert('Error', 'Please enter your full name');
       return;
     }
 
-    if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email');
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      Alert.alert('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    if (!password) {
+      Alert.alert('Error', 'Please enter a password');
       return;
     }
 
     if (password.length < 6) {
       Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
@@ -45,11 +67,34 @@ const SignUpScreen = ({ navigation }) => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+
+    try {
+      const result = await signUpWithEmail(email.trim(), password, fullName.trim());
+      
+      if (result.success) {
+        Alert.alert(
+          'Success', 
+          result.message,
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                // Navigate to main app or welcome screen
+                // You can navigate to your main app screen here
+                console.log('Account created successfully:', result.user);
+              }
+            }
+          ]
+        );
+      } else {
+        Alert.alert('Registration Failed', result.message);
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Account created successfully!');
-    }, 1500);
+    }
   };
 
   return (
@@ -84,6 +129,7 @@ const SignUpScreen = ({ navigation }) => {
                   placeholderTextColor="#9ca3af"
                   value={fullName}
                   onChangeText={setFullName}
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -101,6 +147,7 @@ const SignUpScreen = ({ navigation }) => {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -117,10 +164,12 @@ const SignUpScreen = ({ navigation }) => {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
+                  editable={!isLoading}
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
+                  disabled={isLoading}
                 >
                   <Ionicons 
                     name={showPassword ? "eye-off-outline" : "eye-outline"} 
@@ -143,10 +192,12 @@ const SignUpScreen = ({ navigation }) => {
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showConfirmPassword}
+                  editable={!isLoading}
                 />
                 <TouchableOpacity
                   onPress={() => setShowConfirmPassword(!showConfirmPassword)}
                   style={styles.eyeIcon}
+                  disabled={isLoading}
                 >
                   <Ionicons 
                     name={showConfirmPassword ? "eye-off-outline" : "eye-outline"} 
@@ -161,6 +212,7 @@ const SignUpScreen = ({ navigation }) => {
             <TouchableOpacity 
               style={styles.checkboxContainer}
               onPress={() => setAgreeToTerms(!agreeToTerms)}
+              disabled={isLoading}
             >
               <View style={[styles.checkbox, agreeToTerms && styles.checkboxChecked]}>
                 {agreeToTerms && (
@@ -194,12 +246,12 @@ const SignUpScreen = ({ navigation }) => {
             </View>
 
             {/* Social Sign Up */}
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity style={styles.socialButton} disabled={isLoading}>
               <Ionicons name="logo-google" size={20} color="#4285f4" />
               <Text style={styles.socialButtonText}>Sign up with Google</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.socialButton}>
+            <TouchableOpacity style={styles.socialButton} disabled={isLoading}>
               <Ionicons name="logo-apple" size={20} color="#000" />
               <Text style={styles.socialButtonText}>Sign up with Apple</Text>
             </TouchableOpacity>
@@ -208,7 +260,10 @@ const SignUpScreen = ({ navigation }) => {
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("SignIn")}>
+            <TouchableOpacity 
+              onPress={() => navigation.navigate("SignIn")}
+              disabled={isLoading}
+            >
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
           </View>

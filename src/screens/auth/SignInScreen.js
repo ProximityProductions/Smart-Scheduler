@@ -1,3 +1,4 @@
+// src/screens/auth/SignInScreen.js
 import React, { useState } from 'react';
 import {
   View,
@@ -12,8 +13,9 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { signInWithEmail } from '../../services/firebase/authService';
 
-const SignInScreen = ({ navigation  }) => {
+const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,11 +28,15 @@ const SignInScreen = ({ navigation  }) => {
     }
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert('Success', 'Signed in successfully!');
-    }, 1500);
+    
+    const result = await signIn(email, password);
+    
+    setIsLoading(false);
+
+    if (!result.success) {
+      Alert.alert('Sign In Failed', result.error);
+    }
+    // If successful, AuthContext will automatically navigate to Dashboard
   };
 
   return (
@@ -67,6 +73,7 @@ const SignInScreen = ({ navigation  }) => {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -83,10 +90,12 @@ const SignInScreen = ({ navigation  }) => {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
+                  editable={!isLoading}
                 />
                 <TouchableOpacity
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
+                  disabled={isLoading}
                 >
                   <Ionicons 
                     name={showPassword ? "eye-off-outline" : "eye-outline"} 
@@ -98,7 +107,7 @@ const SignInScreen = ({ navigation  }) => {
             </View>
 
             {/* Forgot Password */}
-            <TouchableOpacity style={styles.forgotPassword}>
+            <TouchableOpacity style={styles.forgotPassword} disabled={isLoading}>
               <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
 
@@ -120,24 +129,19 @@ const SignInScreen = ({ navigation  }) => {
               <View style={styles.dividerLine} />
             </View>
 
-            {/* Social Sign In */}
-            <TouchableOpacity style={styles.socialButton}>
+            {/* Social Sign In - Coming Soon */}
+            <TouchableOpacity style={styles.socialButton} disabled>
               <Ionicons name="logo-google" size={20} color="#4285f4" />
-              <Text style={styles.socialButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-apple" size={20} color="#000" />
-              <Text style={styles.socialButtonText}>Continue with Apple</Text>
+              <Text style={styles.socialButtonText}>Continue with Google (Coming Soon)</Text>
             </TouchableOpacity>
           </View>
 
           {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-            <Text style={styles.footerLink}>Sign Up</Text>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("SignUp")} disabled={isLoading}>
+              <Text style={styles.footerLink}>Sign Up</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -272,6 +276,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     marginBottom: 16,
+    opacity: 0.5,
   },
   socialButtonText: {
     fontSize: 16,
